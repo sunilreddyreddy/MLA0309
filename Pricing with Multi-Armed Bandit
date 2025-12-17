@@ -1,0 +1,48 @@
+import random
+import math
+
+prices = [10, 20, 30]          
+prob = [0.3, 0.2, 0.1]         
+T = 500                        
+
+def pull(i):
+    return prices[i] if random.random() < prob[i] else 0
+def epsilon_greedy(eps=0.1):
+    Q = [0]*3
+    N = [0]*3
+    total = 0
+    for _ in range(T):
+        i = random.randint(0,2) if random.random() < eps else Q.index(max(Q))
+        r = pull(i)
+        N[i] += 1
+        Q[i] += (r - Q[i]) / N[i]
+        total += r
+    return total
+def ucb():
+    Q = [0]*3
+    N = [1]*3
+    total = 0
+    for t in range(1, T+1):
+        u = [Q[i] + math.sqrt(2*math.log(t)/N[i]) for i in range(3)]
+        i = u.index(max(u))
+        r = pull(i)
+        N[i] += 1
+        Q[i] += (r - Q[i]) / N[i]
+        total += r
+    return total
+def thompson():
+    a = [1]*3
+    b = [1]*3
+    total = 0
+    for _ in range(T):
+        s = [random.betavariate(a[i], b[i]) for i in range(3)]
+        i = s.index(max(s))
+        r = pull(i)
+        a[i] += r > 0
+        b[i] += r == 0
+        total += r
+    return total
+
+print("Epsilon-Greedy Revenue:", epsilon_greedy())
+print("UCB Revenue:", ucb())
+print("Thompson Sampling Revenue:", thompson())
