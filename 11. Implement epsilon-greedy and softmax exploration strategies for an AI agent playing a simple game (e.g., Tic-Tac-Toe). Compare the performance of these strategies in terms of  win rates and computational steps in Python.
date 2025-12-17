@@ -1,0 +1,45 @@
+import random
+import math
+actions = [0, 1, 2]   
+winning_move = 2
+episodes = 1000
+def epsilon_greedy(eps=0.1):
+    Q = [0, 0, 0]
+    N = [0, 0, 0]
+    wins = 0
+
+    for _ in range(episodes):
+        if random.random() < eps:
+            a = random.choice(actions)
+        else:
+            a = Q.index(max(Q))
+
+        reward = 1 if a == winning_move else 0
+        wins += reward
+
+        N[a] += 1
+        Q[a] += (reward - Q[a]) / N[a]
+
+    return wins / episodes
+def softmax(temp=1.0):
+    Q = [0, 0, 0]
+    N = [0, 0, 0]
+    wins = 0
+
+    for _ in range(episodes):
+        exp_q = [math.exp(q / temp) for q in Q]
+        probs = [e / sum(exp_q) for e in exp_q]
+
+        a = random.choices(actions, probs)[0]
+        reward = 1 if a == winning_move else 0
+        wins += reward
+
+        N[a] += 1
+        Q[a] += (reward - Q[a]) / N[a]
+
+    return wins / episodes
+eg_win = epsilon_greedy()
+sm_win = softmax()
+
+print("Epsilon-Greedy Win Rate:", eg_win)
+print("Softmax Win Rate:", sm_win)
