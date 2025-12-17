@@ -1,0 +1,25 @@
+import random
+road = [0, 1, 0, 1, 0, 2]
+def traffic_light():
+    return random.choice(['GREEN', 'RED'])
+
+position = 0
+steps = 0
+safe_moves = 0
+
+print("Car Simulation:\n")
+
+while position < len(road) - 1 and steps < 20:
+    steps += 1
+    if road[position] == 1:
+        light = traffic_light()
+        print(f"Step {steps}: At traffic light → {light}")
+        if light == 'RED':
+            print(" Car stops")
+            continue
+    position += 1
+    safe_moves += 1
+    print(f"Step {steps}: Car moves to position {position}")
+
+print("\nDestination reached:", position == len(road) - 1)
+print("Safe moves count:", safe_moves)
