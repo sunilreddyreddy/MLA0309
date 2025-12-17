@@ -1,0 +1,39 @@
+import random
+grid = [
+    [0, 1, 0, -1, 0],
+    [0, 0, 1, 0, 0],
+    [-1, 0, 0, 0, 1],
+    [0, 1, 0, -1, 0],
+    [0, 0, 0, 0, 1]
+]
+
+actions = ['U', 'D', 'L', 'R']
+state = (0, 0)
+
+def move(s, a):
+    r, c = s
+    if a == 'U': r -= 1
+    if a == 'D': r += 1
+    if a == 'L': c -= 1
+    if a == 'R': c += 1
+    return (r, c) if 0 <= r < 5 and 0 <= c < 5 else s
+
+def reward(s):
+    r, c = s
+    return 1 if grid[r][c] == 1 else -1 if grid[r][c] == -1 else 0
+
+def greedy_policy(s):
+    return max(actions, key=lambda a: reward(move(s, a)))
+
+print("Simulation:\n")
+total = 0
+
+for step in range(20):
+    action = greedy_policy(state)
+    state = move(state, action)
+    r = reward(state)
+    if r == 1: grid[state[0]][state[1]] = 0  # clean dirt
+    total += r
+    print(f"Step {step+1}: State={state}, Action={action}, Reward={r}")
+
+print("\nTotal Reward:", total)
