@@ -1,0 +1,33 @@
+import random
+
+EPISODES = 1000
+agents = 3          
+calls = 5           
+def random_policy(free_agents):
+    return free_agents > 0
+
+def priority_policy(free_agents):
+    return free_agents > 1   
+def monte_carlo(policy):
+    returns = []
+
+    for _ in range(EPISODES):
+        free_agents = agents
+        total_reward = 0
+
+        for _ in range(calls):
+            call = random.choice([0, 1])
+            if call == 1 and policy(free_agents):
+                free_agents -= 1
+                total_reward += 1
+            elif call == 1:
+                total_reward -= 1
+
+            if random.random() < 0.5 and free_agents < agents:
+                free_agents += 1
+
+        returns.append(total_reward)
+
+    return sum(returns) / len(returns)
+print("Estimated Value (Random Policy):", monte_carlo(random_policy))
+print("Estimated Value (Priority Policy):", monte_carlo(priority_policy))
