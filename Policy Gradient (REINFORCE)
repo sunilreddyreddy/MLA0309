@@ -1,0 +1,28 @@
+import random
+import math
+theta = 0.0
+alpha = 0.1        
+episodes = 1000
+
+def sigmoid(x):
+    return 1 / (1 + math.exp(-x))
+
+def choose_action():
+    p = sigmoid(theta)        
+    return 1 if random.random() < p else 0
+
+def get_reward(action, market):
+    if action == 1 and market == "GOOD":
+        return 1
+    if action == 1 and market == "BAD":
+        return -1
+    return 0
+
+for _ in range(episodes):
+    market = random.choice(["GOOD", "BAD"])
+    action = choose_action()
+    reward = get_reward(action, market)
+    prob = sigmoid(theta)
+    theta += alpha * reward * (action - prob)
+print("Optimized policy parameter (theta):", round(theta, 2))
+print("Probability of Investing:", round(sigmoid(theta), 2))
