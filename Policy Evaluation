@@ -1,0 +1,49 @@
+import numpy as np
+N = 4
+
+grid = [
+    [0,  1,  0,  0],
+    [0, -1,  0,  0],
+    [0,  0,  1,  0],
+    [0,  0,  0,  2]
+]
+
+actions = [(-1,0), (1,0), (0,-1), (0,1)]  # U, D, L, R
+gamma = 0.9
+theta = 0.001  
+V = np.zeros((N, N))
+
+def reward(state):
+    r, c = state
+    if grid[r][c] == 1:
+        return 2
+    if grid[r][c] == -1:
+        return -2
+    if grid[r][c] == 2:
+        return 5
+    return 0
+
+def next_state(state, action):
+    r, c = state
+    nr, nc = r + action[0], c + action[1]
+    if 0 <= nr < N and 0 <= nc < N:
+        return (nr, nc)
+    return state  
+while True:
+    delta = 0
+    for r in range(N):
+        for c in range(N):
+            v = V[r][c]
+            new_v = 0
+
+            for a in actions:
+                ns = next_state((r, c), a)
+                new_v += 0.25 * (reward(ns) + gamma * V[ns])
+
+            V[r][c] = new_v
+            delta = max(delta, abs(v - new_v))
+
+    if delta < theta:
+        break
+print("Value Function after Policy Evaluation:\n")
+print(np.round(V, 2))
