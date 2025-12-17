@@ -1,0 +1,39 @@
+import random
+states = [0, 1, 2]        
+actions = [0, 1, 2] 
+Q = [[0]*3 for _ in range(3)]
+
+alpha = 0.1 
+gamma = 0.9     
+epsilon = 0.1   
+episodes = 500
+
+def reward(state, action):
+    if state == action:
+        return 2          
+    elif abs(state - action) == 1:
+        return 1          
+    else:
+        return -1         
+
+def next_state():
+    return random.choice(states)
+for _ in range(episodes):
+    state = random.choice(states)
+
+    if random.random() < epsilon:
+        action = random.choice(actions)
+    else:
+        action = Q[state].index(max(Q[state]))
+
+    r = reward(state, action)
+    ns = next_state()
+
+    Q[state][action] += alpha * (r + gamma * max(Q[ns]) - Q[state][action])
+print("Value Function (Q-table):")
+for s in states:
+    print(f"State {s}: {Q[s]}")
+
+print("\nOptimal Policy:")
+for s in states:
+    print(f"Machine state {s} → Setting {Q[s].index(max(Q[s]))}")
