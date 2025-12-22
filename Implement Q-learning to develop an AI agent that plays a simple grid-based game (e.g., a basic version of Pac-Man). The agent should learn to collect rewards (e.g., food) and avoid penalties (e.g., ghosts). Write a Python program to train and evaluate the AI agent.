@@ -1,0 +1,47 @@
+import random
+size = 4
+actions = ['U', 'D', 'L', 'R']
+food = (3, 3)
+ghost = (1, 1)
+alpha = 0.1
+gamma = 0.9
+epsilon = 0.2
+Q = {(i, j, a): 0 for i in range(size) for j in range(size) for a in actions}
+
+def move(s, a):
+    x, y = s
+    if a == 'U' and x > 0: x -= 1
+    if a == 'D' and x < size-1: x += 1
+    if a == 'L' and y > 0: y -= 1
+    if a == 'R' and y < size-1: y += 1
+    return (x, y)
+
+def choose_action(s):
+    if random.random() < epsilon:
+        return random.choice(actions)
+    return max(actions, key=lambda a: Q[(s[0], s[1], a)])
+for _ in range(200):
+    state = (0, 0)
+
+    while state != food and state != ghost:
+        action = choose_action(state)
+        next_state = move(state, action)
+
+        reward = 10 if next_state == food else -10 if next_state == ghost else -1
+
+        best_next = max(Q[(next_state[0], next_state[1], a)] for a in actions)
+        Q[(state[0], state[1], action)] += alpha * (
+            reward + gamma * best_next - Q[(state[0], state[1], action)]
+        )
+
+        state = next_state
+print("Policy:")
+for i in range(size):
+    for j in range(size):
+        if (i, j) == food:
+            print("F", end=" ")
+        elif (i, j) == ghost:
+            print("G", end=" ")
+        else:
+            print(max(actions, key=lambda a: Q[(i, j, a)]), end=" ")
+    print()
