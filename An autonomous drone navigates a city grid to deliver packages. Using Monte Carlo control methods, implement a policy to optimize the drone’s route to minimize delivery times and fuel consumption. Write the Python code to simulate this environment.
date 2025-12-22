@@ -1,0 +1,48 @@
+import random
+SIZE = 5
+START = (0, 0)
+GOAL = (4, 4)
+actions = [( -1,0 ), ( 1,0 ), ( 0,-1 ), ( 0,1 )]
+Q = {}
+for x in range(SIZE):
+    for y in range(SIZE):
+        for a in range(4):
+            Q[((x, y), a)] = 0
+
+epsilon = 0.1
+gamma = 0.9
+episodes = 3000
+def move(state, action):
+    x, y = state
+    dx, dy = actions[action]
+    nx, ny = x + dx, y + dy
+
+    if 0 <= nx < SIZE and 0 <= ny < SIZE:
+        state = (nx, ny)
+
+    if state == GOAL:
+        return state, 10
+    return state, -1
+def choose_action(state):
+    if random.random() < epsilon:
+        return random.randint(0, 3)
+    return max(range(4), key=lambda a: Q[(state, a)])
+for _ in range(episodes):
+    state = START
+    episode = []
+
+    while state != GOAL:
+        action = choose_action(state)
+        next_state, reward = move(state, action)
+        episode.append((state, action, reward))
+        state = next_state
+
+    G = 0
+    for state, action, reward in reversed(episode):
+        G = gamma * G + reward
+        Q[(state, action)] += 0.1 * (G - Q[(state, action)])
+print("Learned Policy (0=U,1=D,2=L,3=R):")
+for x in range(SIZE):
+    for y in range(SIZE):
+        best = max(range(4), key=lambda a: Q[((x, y), a)])
+        print((x, y), "->", best)
