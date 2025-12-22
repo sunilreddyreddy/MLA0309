@@ -1,0 +1,46 @@
+import random
+SIZE = 4
+START = (0, 0)
+GOAL = (3, 3)
+TRAP = (1, 1)
+alpha = 0.1 
+gamma = 0.9      
+episodes = 2000
+actions = [(-1,0), (1,0), (0,-1), (0,1)]
+V = {}
+for x in range(SIZE):
+    for y in range(SIZE):
+        V[(x, y)] = 0
+def step(state, action):
+    x, y = state
+    dx, dy = action
+    nx, ny = x + dx, y + dy
+
+    if 0 <= nx < SIZE and 0 <= ny < SIZE:
+        state = (nx, ny)
+
+    if state == GOAL:
+        return state, 10
+    if state == TRAP:
+        return state, -10
+    return state, -1
+for _ in range(episodes):
+    state = START
+
+    while state != GOAL and state != TRAP:
+        action = random.choice(actions)
+        next_state, reward = step(state, action)
+        V[state] = V[state] + alpha * (reward + gamma * V[next_state] - V[state])
+
+        state = next_state
+policy = {}
+for x in range(SIZE):
+    for y in range(SIZE):
+        state = (x, y)
+        if state in [GOAL, TRAP]:
+            continue
+best_action = max(actions, key=lambda a: step(state, a)[1] + gamma * V[step(state, a)[0]])
+        policy[state] = best_action
+print("Optimal Policy (moves):")
+for state in policy:
+    print(state, "->", policy[state])
