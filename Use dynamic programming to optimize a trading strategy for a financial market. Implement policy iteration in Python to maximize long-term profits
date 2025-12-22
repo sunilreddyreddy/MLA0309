@@ -1,0 +1,61 @@
+import numpy as np
+states = [0, 1]
+n_states = len(states)
+actions = [0, 1, 2]
+n_actions = len(actions)
+gamma = 0.9
+price_change = [1, -1]
+P = np.zeros((n_states, n_actions, n_states))
+P[0, 0, 1] = 1 
+P[0, 1, 0] = 1  
+P[0, 2, 0] = 1  
+P[1, 0, 1] = 1  
+P[1, 1, 0] = 1  
+P[1, 2, 1] = 1  
+R = np.zeros((n_states, n_actions, n_states))
+R[1,1,0] = 1 
+R[0,0,1] = -0.5  # Buy → cost -0.5
+R[0,1,0] = 0  # Sell while not holding → 0
+R[0,2,0] = 0  # Hold while not holding → 0
+R[1,0,1] = -0.5  # Buy while holding → small penalty
+R[1,2,1] = 0     # Hold while holding → 0
+policy = np.zeros(n_states, dtype=int)
+value = np.zeros(n_states)
+
+def policy_evaluation(policy, value, theta=1e-4):
+    while True:
+        delta = 0
+        for s in range(n_states):
+            v = 0
+            a = policy[s]
+            for s_ in range(n_states):
+                v += P[s,a,s_] * (R[s,a,s_] + gamma * value[s_])
+            delta = max(delta, abs(v - value[s]))
+            value[s] = v
+        if delta < theta:
+            break
+    return value
+
+def policy_improvement(value, policy):
+    policy_stable = True
+    for s in range(n_states):
+        old_action = policy[s]
+        action_values = np.zeros(n_actions)
+        for a in range(n_actions):
+            for s_ in range(n_states):
+                action_values[a] += P[s,a,s_] * (R[s,a,s_] + gamma * value[s_])
+        policy[s] = np.argmax(action_values)
+        if old_action != policy[s]:
+            policy_stable = False
+    return policy, policy_stable
+
+iteration = 0
+while True:
+    iteration += 1
+    value = policy_evaluation(policy, value)
+    policy, stable = policy_improvement(value, policy)
+    if stable:
+        break
+
+print("Optimal Value Function:", value)
+print("Optimal Policy (0=Buy,1=Sell,2=Hold):", policy)
