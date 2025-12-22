@@ -1,0 +1,47 @@
+import random
+grid_size = 4
+actions = ['U', 'D', 'L', 'R']
+Q = {}
+for i in range(grid_size):
+    for j in range(grid_size):
+        for a in actions:
+            Q[(i, j, a)] = 0
+alpha = 0.1
+gamma = 0.9
+epsilon = 0.2
+episodes = 200
+def choose_action(state):
+    if random.random() < epsilon:
+        return random.choice(actions)
+    return max(actions, key=lambda a: Q[(state[0], state[1], a)])
+def move(state, action):
+    i, j = state
+    if action == 'U' and i > 0: i -= 1
+    if action == 'D' and i < grid_size-1: i += 1
+    if action == 'L' and j > 0: j -= 1
+    if action == 'R' and j < grid_size-1: j += 1
+    return (i, j)
+for ep in range(episodes):
+    state = (0, 0)
+    cleaned = {state}
+    action = choose_action(state)
+
+    for _ in range(30):
+        next_state = move(state, action)
+        reward = 1 if next_state not in cleaned else -0.1
+        cleaned.add(next_state)
+
+        next_action = choose_action(next_state)
+
+        Q[(state[0], state[1], action)] += alpha * (
+            reward + gamma * Q[(next_state[0], next_state[1], next_action)]
+            - Q[(state[0], state[1], action)]
+        )
+
+        state, action = next_state, next_action
+print("Learned Policy:")
+for i in range(grid_size):
+    for j in range(grid_size):
+        best = max(actions, key=lambda a: Q[(i, j, a)])
+        print(best, end=" ")
+    print()
