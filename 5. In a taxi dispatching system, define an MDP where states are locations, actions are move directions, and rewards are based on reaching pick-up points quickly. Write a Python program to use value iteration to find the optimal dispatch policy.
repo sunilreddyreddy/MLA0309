@@ -1,0 +1,70 @@
+import numpy as np
+GRID_SIZE = 3
+pickup = (2, 2)
+actions = {
+    "UP": (-1, 0),
+    "DOWN": (1, 0),
+    "LEFT": (0, -1),
+    "RIGHT": (0, 1)
+}
+gamma = 0.9
+theta = 0.001  
+V = np.zeros((GRID_SIZE, GRID_SIZE))
+def reward(state):
+    if state == pickup:
+        return 10
+    return -1
+def next_state(state, action):
+    x, y = state
+    dx, dy = actions[action]
+    nx, ny = x + dx, y + dy
+    if nx < 0 or nx >= GRID_SIZE or ny < 0 or ny >= GRID_SIZE:
+        return state
+    return (nx, ny)
+while True:
+    delta = 0
+    for x in range(GRID_SIZE):
+        for y in range(GRID_SIZE):
+            state = (x, y)
+
+            if state == pickup:
+                continue
+
+            v = V[x, y]
+            action_values = []
+
+            for a in actions:
+                ns = next_state(state, a)
+                action_value = reward(ns) + gamma * V[ns]
+                action_values.append(action_value)
+
+            V[x, y] = max(action_values)
+            delta = max(delta, abs(v - V[x, y]))
+
+    if delta < theta:
+        break
+policy = {}
+for x in range(GRID_SIZE):
+    for y in range(GRID_SIZE):
+        state = (x, y)
+        if state == pickup:
+            policy[state] = "PICKUP"
+            continue
+
+        best_action = None
+        best_value = -float("inf")
+
+        for a in actions:
+            ns = next_state(state, a)
+            value = reward(ns) + gamma * V[ns]
+            if value > best_value:
+                best_value = value
+                best_action = a
+
+        policy[state] = best_action
+print("Optimal Value Function:")
+print(V)
+
+print("\nOptimal Dispatch Policy:")
+for k in policy:
+    print(k, "->", policy[k])
