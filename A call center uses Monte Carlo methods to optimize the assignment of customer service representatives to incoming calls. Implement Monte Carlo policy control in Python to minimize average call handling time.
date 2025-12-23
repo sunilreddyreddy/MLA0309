@@ -1,0 +1,40 @@
+import random
+import numpy as np
+states = [0, 1, 2, 3]
+actions = [0, 1, 2]
+handling_times = {
+    0: 5,   
+    1: 8,   
+    2: 12   
+}
+Q = {(s, a): 0.0 for s in states for a in actions}
+returns = {(s, a): [] for s in states for a in actions}
+epsilon = 0.2
+gamma = 1.0
+episodes = 5000
+def epsilon_greedy(state):
+    if random.random() < epsilon:
+        return random.choice(actions)
+    return max(actions, key=lambda a: Q[(state, a)])
+for _ in range(episodes):
+    episode = []
+    state = random.choice(states)
+    for _ in range(5):
+        action = epsilon_greedy(state)
+        reward = -handling_times[action]
+        next_state = max(0, state - 1)
+        episode.append((state, action, reward))
+        state = next_state
+    G = 0
+    visited = set()
+    for state, action, reward in reversed(episode):
+        G = gamma * G + reward
+        if (state, action) not in visited:
+            returns[(state, action)].append(G)
+            Q[(state, action)] = np.mean(returns[(state, action)])
+            visited.add((state, action))
+policy = {s: max(actions, key=lambda a: Q[(s, a)]) for s in states}
+
+print("Optimal Assignment Policy:")
+for s in states:
+    print(f"Calls in Queue {s} → Assign to Representative {policy[s]}")
