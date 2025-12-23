@@ -1,70 +1,36 @@
 import numpy as np
-GRID_SIZE = 3
-pickup = (2, 2)
-actions = {
-    "UP": (-1, 0),
-    "DOWN": (1, 0),
-    "LEFT": (0, -1),
-    "RIGHT": (0, 1)
-}
+n = 3
 gamma = 0.9
-theta = 0.001  
-V = np.zeros((GRID_SIZE, GRID_SIZE))
-def reward(state):
-    if state == pickup:
-        return 10
-    return -1
-def next_state(state, action):
-    x, y = state
-    dx, dy = actions[action]
-    nx, ny = x + dx, y + dy
-    if nx < 0 or nx >= GRID_SIZE or ny < 0 or ny >= GRID_SIZE:
-        return state
-    return (nx, ny)
-while True:
-    delta = 0
-    for x in range(GRID_SIZE):
-        for y in range(GRID_SIZE):
-            state = (x, y)
-
-            if state == pickup:
-                continue
-
-            v = V[x, y]
-            action_values = []
-
-            for a in actions:
-                ns = next_state(state, a)
-                action_value = reward(ns) + gamma * V[ns]
-                action_values.append(action_value)
-
-            V[x, y] = max(action_values)
-            delta = max(delta, abs(v - V[x, y]))
-
-    if delta < theta:
-        break
-policy = {}
-for x in range(GRID_SIZE):
-    for y in range(GRID_SIZE):
-        state = (x, y)
-        if state == pickup:
-            policy[state] = "PICKUP"
-            continue
-
-        best_action = None
-        best_value = -float("inf")
-
-        for a in actions:
-            ns = next_state(state, a)
-            value = reward(ns) + gamma * V[ns]
-            if value > best_value:
-                best_value = value
-                best_action = a
-
-        policy[state] = best_action
-print("Optimal Value Function:")
-print(V)
-
-print("\nOptimal Dispatch Policy:")
-for k in policy:
-    print(k, "->", policy[k])
+pickup = (2, 2)
+V = np.zeros((n, n))
+actions = [(-1,0),(1,0),(0,-1),(0,1)]
+for _ in range(50):
+    for i in range(n):
+        for j in range(n):
+            if (i, j) == pickup:
+                continue
+            values = []
+            for dx, dy in actions:
+                ni, nj = i + dx, j + dy
+                if 0 <= ni < n and 0 <= nj < n:
+                    reward = 10 if (ni, nj) == pickup else -1
+                    values.append(reward + gamma * V[ni][nj])
+            V[i][j] = max(values)
+policy = np.empty((n, n), dtype=str)
+moves = ['U', 'D', 'L', 'R']
+for i in range(n):
+    for j in range(n):
+        if (i, j) == pickup:
+            policy[i][j] = 'P'
+            continue
+        best = -1e9
+        for k, (dx, dy) in enumerate(actions):
+            ni, nj = i + dx, j + dy
+            if 0 <= ni < n and 0 <= nj < n:
+                reward = 10 if (ni, nj) == pickup else -1
+                value = reward + gamma * V[ni][nj]
+                if value > best:
+                    best = value
+                    policy[i][j] = moves[k]
+print("Value Function:\n", V)
+print("\nOptimal Policy:\n", policy)
