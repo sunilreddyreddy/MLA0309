@@ -1,0 +1,56 @@
+import numpy as np
+class PatientEnv:
+    def reset(self):
+        self.state = np.random.randint(0, 2, size=2)
+        return self.state
+
+    def step(self, action):
+        age, severity = self.state
+        if severity == 1 and action == 1:
+            reward = 1
+        elif severity == 0 and action == 0:
+            reward = 1
+        else:
+            reward = -1
+
+        done = True
+        return self.state, reward, done
+class A2CAgent:
+    def __init__(self):
+        self.actor_weights = np.random.randn(2, 2) * 0.1
+        self.critic_weights = np.random.randn(2) * 0.1
+        self.lr = 0.01
+
+    def softmax(self, x):
+        e = np.exp(x - np.max(x))
+        return e / np.sum(e)
+
+    def choose_action(self, state):
+        logits = np.dot(state, self.actor_weights)
+        probs = self.softmax(logits)
+        action = np.random.choice(2, p=probs)
+        return action, probs
+
+    def value(self, state):
+        return np.dot(state, self.critic_weights)
+
+    def update(self, state, action, reward, probs):
+        value = self.value(state)
+        advantage = reward - value
+        for a in range(2):
+            if a == action:
+                self.actor_weights[:, a] += self.lr * advantage * state * (1 - probs[a])
+            else:
+                self.actor_weights[:, a] -= self.lr * advantage * state * probs[a]
+        self.critic_weights += self.lr * advantage * state
+env = PatientEnv()
+agent = A2CAgent()
+
+for episode in range(500):
+    state = env.reset()
+    action, probs = agent.choose_action(state)
+    _, reward, _ = env.step(action)
+    agent.update(state, action, reward, probs)
+if episode % 100 == 0:
+        print(f"Episode {episode}, Reward: {reward}")
+print("Training completed!")
