@@ -1,0 +1,41 @@
+class Env:
+    def __init__(self):
+        self.obj = False
+        self.tool = False
+        self.done_task = False
+
+    def step(self, action):
+        if action == "get_object":
+            self.obj = True
+            return 5
+        if action == "get_tool":
+            self.tool = True
+            return 5
+        if action == "assemble" and self.obj and self.tool:
+            self.done_task = True
+            return 10
+        return -1
+class Worker:
+    def act(self, task):
+        return task
+class Manager:
+    def choose_task(self, env):
+        if not env.obj:
+            return "get_object"
+        if not env.tool:
+            return "get_tool"
+        return "assemble"
+env = Env()
+manager = Manager()
+worker = Worker()
+
+print("\nHierarchical Robot Manipulation\n")
+
+while not env.done_task:
+    task = manager.choose_task(env)
+    action = worker.act(task)
+    reward = env.step(action)
+
+    print(f"Manager → {task} | Worker → {action} | Reward = {reward}")
+
+print("\n✔ Assembly Completed")
