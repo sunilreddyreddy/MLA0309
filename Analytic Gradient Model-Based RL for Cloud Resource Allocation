@@ -1,0 +1,43 @@
+import numpy as np
+class CloudEnvironment:
+    def __init__(self, vm_cost=1.0, penalty_cost=5.0):
+        self.vm_cost = vm_cost
+        self.penalty_cost = penalty_cost
+
+    def reward(self, demand, allocation):
+        unmet = max(0, demand - allocation)
+        cost = self.vm_cost * allocation + self.penalty_cost * unmet
+        return -cost
+def analytic_gradient(theta, demand, env):
+    allocation = theta * demand
+    if allocation < demand:
+        dR_da = -(env.vm_cost - env.penalty_cost)
+    else:
+        dR_da = -env.vm_cost
+    da_dtheta = demand
+
+    return dR_da * da_dtheta
+def train():
+    env = CloudEnvironment(vm_cost=1.0, penalty_cost=5.0)
+
+    theta = 0.5        
+    lr = 0.01            
+    episodes = 300
+
+    rewards = []
+
+    for episode in range(episodes):
+        demand = np.random.randint(5, 25)
+        allocation = theta * demand
+        reward = env.reward(demand, allocation)
+        grad = analytic_gradient(theta, demand, env)
+        theta += lr * grad
+
+        rewards.append(reward)
+
+    return theta, rewards
+theta_final, reward_history = train()
+
+print("Optimized policy parameter (theta):", round(theta_final, 3))
+print("Average reward (first 50 episodes):", round(np.mean(reward_history[:50]), 2))
+print("Average reward (last 50 episodes):", round(np.mean(reward_history[-50:]), 2))
