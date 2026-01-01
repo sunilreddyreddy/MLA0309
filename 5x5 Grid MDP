@@ -1,0 +1,21 @@
+import random
+
+grid = [[0,1,0,-1,1],
+        [0,0,1,0,0],
+        [-1,0,0,1,0],
+        [0,1,0,0,-1],
+        [1,0,0,1,0]]
+
+moves = [(0,1),(1,0),(-1,0),(0,-1)]  # R, D, U, L
+
+def run(policy):
+    x=y=0; reward=0
+    for _ in range(20):
+        dx,dy = random.choice(moves) if policy=="random" else (0,1)
+        nx,ny = max(0,min(4,x+dx)), max(0,min(4,y+dy))
+        x,y = nx,ny
+        reward += grid[x][y]
+    return reward
+
+print("Random Policy Reward:", run("random"))
+print("Greedy Policy Reward:", run("greedy"))
